@@ -21,7 +21,7 @@ jobs:
       - name: Lint with ruff
         run: ruff check .
       - name: Run tests with pytest
-        run: pytest --cov=app --cov-fail-under=70 tests/
+        run: python -m pytest --cov=app --cov-fail-under=70 tests/
 
   security-scan:
     runs-on: ubuntu-latest
