@@ -70,31 +70,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_PASSWORD }}" > ~/.ssh/password
-          # We'll use sshpass
       - name: Deploy to sandbox
         env:
           SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
         run: |
           sudo apt-get update && sudo apt-get install -y sshpass
           export REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << EOF
-          cd ${{ secrets.DEPLOY_PATH }}
-          mkdir -p instance
-          cat << 'INNER' > compose.yaml
+
+          # Write a minimal compose.yaml locally
+          cat > deploy-compose.yaml << COMPOSEEOF
           services:
             web:
-              image: ghcr.io/$REPO_LOWER/csot-w3-app:latest
+              image: ghcr.io/${REPO_LOWER}/csot-w3-app:latest
               ports:
                 - "0:80"
-              volumes:
-                - ./instance:/app/instance
               restart: always
-              network_mode: bridge
-          INNER
-          docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull
-          docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d
-          EOF
+          COMPOSEEOF
+
+          # Copy it to the server
+          sshpass -e scp -o StrictHostKeyChecking=no -P ${{ secrets.DEPLOY_SSH_PORT }} \
+            deploy-compose.yaml \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/compose.yaml
+
+          # Run docker compose on the server
+          sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull && docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d"
