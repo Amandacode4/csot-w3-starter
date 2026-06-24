@@ -82,18 +82,19 @@ jobs:
           sudo apt-get update && sudo apt-get install -y sshpass
           export REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << EOF
-            mkdir -p ${{ secrets.DEPLOY_PATH }}
-            cd ${{ secrets.DEPLOY_PATH }}
-            echo "services:
-              web:
-                image: ghcr.io/$REPO_LOWER/csot-w3-app:latest
-                ports:
-                  - \\\"0:80\\\"
-                volumes:
-                  - sqlite_data:/app/instance
-                restart: always
-            volumes:
-              sqlite_data:" > compose.yaml
-            docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull
-            docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d
+          cd ${{ secrets.DEPLOY_PATH }}
+          cat << 'INNER' > compose.yaml
+          services:
+            web:
+              image: ghcr.io/$REPO_LOWER/csot-w3-app:latest
+              ports:
+                - "0:80"
+              volumes:
+                - sqlite_data:/app/instance
+              restart: always
+          volumes:
+            sqlite_data:
+          INNER
+          docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull
+          docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d
           EOF
