@@ -83,6 +83,7 @@ jobs:
           export REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << EOF
           cd ${{ secrets.DEPLOY_PATH }}
+          mkdir -p instance
           cat << 'INNER' > compose.yaml
           services:
             web:
@@ -90,11 +91,9 @@ jobs:
               ports:
                 - "0:80"
               volumes:
-                - sqlite_data:/app/instance
+                - ./instance:/app/instance
               restart: always
               network_mode: bridge
-          volumes:
-            sqlite_data:
           INNER
           docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull
           docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d
