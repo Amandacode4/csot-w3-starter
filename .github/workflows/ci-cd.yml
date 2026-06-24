@@ -92,6 +92,7 @@ jobs:
               volumes:
                 - sqlite_data:/app/instance
               restart: always
+              network_mode: bridge
           volumes:
             sqlite_data:
           INNER
