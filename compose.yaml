@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    image: ghcr.io/${GITHUB_REPOSITORY:-local}/csot-w3-app:latest
+    ports:
+      - "0:80"
+    volumes:
+      - sqlite_data:/app/instance
+    restart: always
+
+volumes:
+  sqlite_data:
