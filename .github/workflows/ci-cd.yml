@@ -74,34 +74,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y sshpass
       - name: Set lowercase repo name
         run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-      - name: Write compose.yaml
-        run: |
-          cat > deploy-compose.yaml << EOF
-          services:
-            web:
-              image: ghcr.io/${{ env.REPO_LOWER }}/csot-w3-app:latest
-              ports:
-                - "0:80"
-              restart: always
-          EOF
-      - name: Create deploy directory on server
+      - name: Deploy to sandbox via SSH
         env:
           SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "mkdir -p ${{ secrets.DEPLOY_PATH }}"
-      - name: Copy compose.yaml to server
-        env:
-          SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
-        run: |
-          sshpass -e scp -o StrictHostKeyChecking=no -P ${{ secrets.DEPLOY_SSH_PORT }} \
-            deploy-compose.yaml \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/compose.yaml
-      - name: Run docker compose on server
-        env:
-          SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
-        run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "cd ${{ secrets.DEPLOY_PATH }} && docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull && docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d"
+            "cd ${{ secrets.DEPLOY_PATH }} && \
+             printf 'services:\n  web:\n    image: ghcr.io/${{ env.REPO_LOWER }}/csot-w3-app:latest\n    ports:\n      - \"0:80\"\n    restart: always\n' > compose.yaml && \
+             docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} pull && \
+             docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} up -d"
