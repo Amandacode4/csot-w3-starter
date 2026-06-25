@@ -80,7 +80,7 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "printf 'services:\n  web:\n    image: ghcr.io/${{ env.REPO_LOWER }}/csot-w3-app:latest\n    ports:\n      - \"0:80\"\n    restart: always\n' > ~/compose.yaml && \
+            "printf 'services:\n  web:\n    image: ghcr.io/${{ env.REPO_LOWER }}/csot-w3-app:latest\n    ports:\n      - \"0:80\"\n    restart: always\n    network_mode: bridge\n' > ~/compose.yaml && \
              docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} -f ~/compose.yaml pull && \
              docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} -f ~/compose.yaml up -d"
 
