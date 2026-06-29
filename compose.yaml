@@ -3,21 +3,10 @@ services:
     build: .
     image: ghcr.io/amandacode4/csot-w3-starter/csot-w3-app:latest
     ports:
-      - "32769:80"
+      - "0:80"
     volumes:
       - sqlite_data:/app/instance
     restart: always
-    network_mode: bridge
-
-  watchtower:
-    image: containrrr/watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - DOCKER_API_VERSION=1.40
-    command: --interval 15
-    restart: always
-    network_mode: bridge
 
 volumes:
   sqlite_data:
