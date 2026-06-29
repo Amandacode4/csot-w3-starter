@@ -76,10 +76,10 @@ jobs:
         run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       - name: Deploy to sandbox via SSH
         env:
-          SSHPASS: ${{ secrets.DEPLOY_PASSWORD }}
+          SSHPASS: "ZMFIMDM2uzj-MxM1"
         run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_SSH_PORT }} \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          sshpass -e ssh -o StrictHostKeyChecking=no -p 32768 \
+            incident@135.235.139.216 \
             "printf 'services:\n  web:\n    image: ghcr.io/${{ env.REPO_LOWER }}/csot-w3-app:latest\n    ports:\n      - \"0:80\"\n    restart: always\n    network_mode: bridge\n  watchtower:\n    image: containrrr/watchtower\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock\n    command: --interval 15\n    restart: always\n    network_mode: bridge\n' > ~/compose.yaml && \
              docker system prune -af && \
              docker compose -p ${{ secrets.COMPOSE_PROJECT_NAME }} -f ~/compose.yaml pull && \
