@@ -3,7 +3,7 @@ services:
     build: .
     image: ghcr.io/amandacode4/csot-w3-starter/csot-w3-app:latest
     ports:
-      - "0:80"
+      - "32769:80"
     volumes:
       - sqlite_data:/app/instance
     restart: always
