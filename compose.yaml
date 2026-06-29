@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    image: ghcr.io/${GITHUB_REPOSITORY:-local}/csot-w3-app:latest
+    image: ghcr.io/amandacode4/csot-w3-starter/csot-w3-app:latest
     ports:
       - "0:80"
     volumes:
