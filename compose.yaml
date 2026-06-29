@@ -8,5 +8,14 @@ services:
       - sqlite_data:/app/instance
     restart: always
 
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_API_VERSION=1.40
+    command: --interval 15
+    restart: always
+
 volumes:
   sqlite_data:
